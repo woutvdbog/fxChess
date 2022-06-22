@@ -1,6 +1,6 @@
 package gui;
 
-import domain.GameController;
+import domain.Game;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
@@ -8,8 +8,8 @@ import javafx.stage.Stage;
 public class PanelController {
 	
 	private Stage primaryStage;
-	private GameController dc;
-	public PanelController(Stage primaryStage, GameController dc) {
+	private Game dc;
+	public PanelController(Stage primaryStage, Game dc) {
 		this.primaryStage = primaryStage;
 		this.dc = dc;
 		
@@ -22,7 +22,7 @@ public class PanelController {
 		}
 	}
 	
-	public void start(Stage primaryStage, GameController dc) {
+	public void start(Stage primaryStage, Game dc) {
 		MainPanel root = new MainPanel(this, dc);
 		Scene scene = new Scene(root, 500, 200);
 		primaryStage.setTitle("fxChess");
@@ -30,7 +30,7 @@ public class PanelController {
 		primaryStage.show();
 	}
 
-	public void gamePanel(String FEN, GameController dc) {
+	public void gamePanel(String FEN, Game dc) {
 		GamePanel root = new GamePanel(this, dc,FEN);
 		Scene scene = new Scene(root, 8*80, 8*80);
 		primaryStage.setResizable(false);

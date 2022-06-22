@@ -2,7 +2,7 @@ package gui;
 
 
 
-import domain.GameController;
+import domain.Game;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -10,10 +10,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
 public class MainPanel extends GridPane {
-	private GameController dc;
+	private Game dc;
 	Button button;
 	TextField textField;
-	public MainPanel(PanelController panelController, GameController dc) {
+	public MainPanel(PanelController panelController, Game dc) {
 		this.dc = dc;
 		
 		button = new Button("Play");

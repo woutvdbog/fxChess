@@ -10,7 +10,7 @@ public class Board {
 		initBoard(FEN);
 	}
 	
-	public Piece[][] getBoard() {
+	public Piece[][] getPieces() {
 		return this.board;
 	}
 	

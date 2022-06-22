@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import domain.Board;
-import domain.GameController;
+import domain.Game;
 import domain.Piece;
+import domain.Player;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -18,10 +19,12 @@ import javafx.scene.shape.Rectangle;
 
 public class GamePanel extends Pane {
 
-	private GameController dc;
+	private Game dc;
 	
 	private final int SIZE = 80;
 
+	private Board board;
+	
 	Piece[][] boardDisplay;
 	Rectangle[][] tiles;
 	
@@ -31,17 +34,19 @@ public class GamePanel extends Pane {
 	
 	Label lblTurn;
 	
-	public GamePanel(PanelController panelController, GameController dc,String FEN) {
+	public GamePanel(PanelController panelController, Game dc,String FEN) {
 		this.dc = dc;
 	    BorderPane borderPane = new BorderPane();
 		lblTurn = new Label("White");
 		lblTurn.setTranslateY(680);
 		lblTurn.setTranslateX(640/2 - 50);
 	    lblTurn.setStyle("-fx-font: 24 helvetica;");
-		dc.makeBoard(FEN);
 		
-		Board board = dc.getBoard();
-		boardDisplay = board.getBoard();
+		dc.startGame(FEN, new Player("Test1", true), new Player("Test2", true));
+		
+		board = dc.getBoard();
+		boardDisplay = board.getPieces();
+		
 		capturesWhite = new ArrayList<>();
 		capturesBlack = new ArrayList<>();
 		highlighted = new ArrayList<Rectangle>();
