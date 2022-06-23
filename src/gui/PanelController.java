@@ -32,7 +32,7 @@ public class PanelController {
 
 	public void gamePanel(String FEN, Game dc) {
 		GamePanel root = new GamePanel(this, dc,FEN);
-		Scene scene = new Scene(root, 8*80, 8*80);
+		Scene scene = new Scene(root, 8*80, 8*80 + 50);
 		primaryStage.setResizable(false);
 		primaryStage.setTitle("fxChess");
 		primaryStage.setScene(scene);

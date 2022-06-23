@@ -38,13 +38,14 @@ public class GamePanel extends Pane {
 	public GamePanel(PanelController panelController, Game dc,String FEN) {
 		this.dc = dc;
 	    BorderPane borderPane = new BorderPane();
-		lblTurn = new Label("White");
-		lblTurn.setTranslateY(680);
-		lblTurn.setTranslateX(640/2 - 50);
-	    lblTurn.setStyle("-fx-font: 24 helvetica;");
+		lblTurn = new Label();
+		lblTurn.setTranslateY(648);
+		lblTurn.setTranslateX(640/2 - 70);
+	    lblTurn.setStyle("-fx-font: 24 Helvetica;");
 		
 		dc.startGame(FEN, new Player("Test1", true), new Player("Test2", true));
 		
+		updateLabels();
 		board = dc.getBoard();
 		boardDisplay = board.getPieces();
 		
@@ -85,29 +86,42 @@ public class GamePanel extends Pane {
 		
 		for(int i = 0; i < boardDisplay.length; i++) {
 			for(int j = 0; j < boardDisplay[i].length; j++) {
+				
 				Piece piece = boardDisplay[i][j];
+				
 				if(piece != null) {
-				ImageView p = piece.getImageView();
-				p.setX(piece.getX() * 80);
-				p.setY(piece.getY() * 80);
-				p.setFitHeight(SIZE);
-				p.setFitWidth(SIZE);
-
-				p.setOnMousePressed(e -> {
-					if(e.getButton() == MouseButton.PRIMARY) clicked(e, piece);
-				});
-				p.setOnMouseDragged(e -> {
-					if(e.getButton() == MouseButton.PRIMARY) dragged(e, piece);
-				});
-				p.setOnMouseReleased(e -> {
-					if(e.getButton() == MouseButton.PRIMARY) released(e, piece);
-				});
-				this.getChildren().add(p);
+					ImageView p = piece.getImageView();
+					p.setX(piece.getX() * 80);
+					p.setY(piece.getY() * 80);
+					p.setFitHeight(SIZE);
+					p.setFitWidth(SIZE);
+					
+					p.setOnMousePressed(e -> {
+						if(isTurn(piece) && e.getButton() == MouseButton.PRIMARY) clicked(e, piece);
+					});
+					
+					p.setOnMouseDragged(e -> {
+						if(isTurn(piece) && e.getButton() == MouseButton.PRIMARY) dragged(e, piece);
+					});
+					
+					p.setOnMouseReleased(e -> {
+						if(isTurn(piece) && e.getButton() == MouseButton.PRIMARY) released(e, piece);
+					});
+					
+					this.getChildren().add(p);
 				}
 			}
 		}
 		this.getChildren().addAll(boardGrid, lblTurn);
 
+	}
+	
+	private void updateLabels() {
+		lblTurn.setText(String.format("TURN: %s", dc.isWhitesTurn() ? "WHITE" : "BLACK"));
+	}
+	
+	public boolean isTurn(Piece piece) {
+		return dc.isWhitesTurn() && piece.isWhite() || !dc.isWhitesTurn() && !piece.isWhite();
 	}
 	
 	public void clicked(MouseEvent e, Piece piece) {
@@ -134,6 +148,11 @@ public class GamePanel extends Pane {
 		int x = (int) ((e.getX() / SIZE));
 		int y = (int) ((e.getY() / SIZE));
 
+		if((x < 0 || x > 7) || (y < 0 || y > 7)) {
+			resetPiece(p);
+			return;
+		};
+		
 		Piece target = boardDisplay[(int) Math.floor(y)][(int) Math.floor(x)];
 		
 		final int y1 = y;
@@ -141,30 +160,33 @@ public class GamePanel extends Pane {
 		
 		boolean validTile = highlighted.stream().anyMatch(t -> (t.getX() / 80) == x1 && (t.getY() / 80) == y1);
 		if((target == null || (p.isWhite() && !target.isWhite()) || (!p.isWhite() && target.isWhite())) && validTile) {
+				
+				if(target != null && target.isWhite()) {
+					capturesWhite.add(target);
+					this.getChildren().remove(target.getImageView());
+				} else if(target != null && !target.isWhite()) {
+					capturesBlack.add(target);
+					this.getChildren().remove(target.getImageView());
+				}
+				
+			if(x > 7) x = 7;
+			if(x < 0) x = 0;
+			if(y > 7) y = 7;
+			if(y < 0) y = 0;
 			
-			if(target != null && target.isWhite()) {
-				capturesWhite.add(target);
-				this.getChildren().remove(target.getImageView());
-			} else if(target != null && !target.isWhite()) {
-				capturesBlack.add(target);
-				this.getChildren().remove(target.getImageView());
-			}
-			
-		if(x > 7) x = 7;
-		if(x < 0) x = 0;
-		if(y > 7) y = 7;
-		if(y < 0) y = 0;
-		
-		p.setX(x);
-		p.setY(y);
-		p.draw();
-		
-		boardDisplay[y][x] = p;
-		
-		clearHighlighted();
-		} else {
+			p.setX(x);
+			p.setY(y);
 			p.draw();
-			boardDisplay[(int) p.getY()][(int) Math.floor(p.getX())] = p;
+			
+			boardDisplay[y][x] = p;
+			
+			clearHighlighted();
+			
+			if(p.isFirstMove()) p.setFirstMove(false);
+			dc.setWhitesTurn(!dc.isWhitesTurn());
+			updateLabels();
+		} else {
+			resetPiece(p);
 		}
 		
 		dc.updateBoard(boardDisplay);
@@ -176,6 +198,11 @@ public class GamePanel extends Pane {
 			}
 			System.out.println();
 		}
+	}
+	
+	private void resetPiece(Piece p) {
+		p.draw();
+		boardDisplay[(int) p.getY()][(int) Math.floor(p.getX())] = p;
 	}
 	
 	private void clearHighlighted() {
@@ -247,6 +274,9 @@ public class GamePanel extends Pane {
 	}
 	
 	private void pawnMove(Piece piece, int x, int y) {
+		
+		int distance = piece.isFirstMove() ? 2 : 1;
+		
 		if(piece.isWhite()) {
 			boolean hasOpponent = false;
 			if((y > 0 && x > 0) && boardDisplay[y - 1][x - 1] != null && !boardDisplay[y - 1][x - 1].isWhite()) {
@@ -257,9 +287,9 @@ public class GamePanel extends Pane {
 				hasOpponent = true;
 				highlighted.add(new Rectangle(x*SIZE + SIZE, y*SIZE - SIZE, SIZE,SIZE));
 			}
-			
-			if((!hasOpponent && y > 0) && boardDisplay[y - 1][x] == null) {
+			if((!hasOpponent && y > (distance == 2 ? 1 : 0)) && boardDisplay[y - distance][x] == null) {
 				highlighted.add(new Rectangle(x*SIZE, y*SIZE - SIZE, SIZE,SIZE));
+				if(distance == 2) highlighted.add(new Rectangle(x*SIZE, y*SIZE - (2*SIZE), SIZE,SIZE));
 			}
 		} else {
 			boolean hasOpponent = false;
@@ -272,8 +302,9 @@ public class GamePanel extends Pane {
 				highlighted.add(new Rectangle(x*SIZE - SIZE, y*SIZE + SIZE, SIZE,SIZE));
 			}
 			
-			if((!hasOpponent && y < 7) && boardDisplay[y + 1][x] == null) {
+			if((!hasOpponent && y < (distance == 2 ? 6 : 7)) && boardDisplay[y + distance][x] == null) {
 				highlighted.add(new Rectangle(x*SIZE, y*SIZE + SIZE, SIZE,SIZE));
+				if(distance == 2) highlighted.add(new Rectangle(x*SIZE, y*SIZE + (2*SIZE), SIZE,SIZE));
 			}
 		}
 	}

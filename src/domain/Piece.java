@@ -8,6 +8,7 @@ import javafx.scene.image.ImageView;
 public class Piece {
 
 	private ImageView image;
+	private boolean firstMove;
 	
 	public enum Type {
 		EMPTY('0'),
@@ -39,7 +40,7 @@ public class Piece {
 		this.white = white;
 		setX(x);
 		setY(y);
-	
+		setFirstMove(true);
 		this.image = new ImageView(new Image(getClass().getResource("/images/" + this.getType().getChar() + (this.isWhite() ? "1" : "") + ".png").toExternalForm()));
 	}
 
@@ -91,6 +92,14 @@ public class Piece {
 
 	public ImageView getImageView() {
 		return image;
+	}
+
+	public boolean isFirstMove() {
+		return firstMove;
+	}
+
+	public void setFirstMove(boolean firstMove) {
+		this.firstMove = firstMove;
 	}
 
 }
