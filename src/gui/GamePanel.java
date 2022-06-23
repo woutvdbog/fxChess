@@ -10,6 +10,7 @@ import domain.Piece;
 import domain.Player;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -92,9 +93,15 @@ public class GamePanel extends Pane {
 				p.setFitHeight(SIZE);
 				p.setFitWidth(SIZE);
 
-				p.setOnMousePressed(e -> clicked(e, piece));
-				p.setOnMouseDragged(e -> dragged(e, piece));
-				p.setOnMouseReleased(e -> released(e, piece));
+				p.setOnMousePressed(e -> {
+					if(e.getButton() == MouseButton.PRIMARY) clicked(e, piece);
+				});
+				p.setOnMouseDragged(e -> {
+					if(e.getButton() == MouseButton.PRIMARY) dragged(e, piece);
+				});
+				p.setOnMouseReleased(e -> {
+					if(e.getButton() == MouseButton.PRIMARY) released(e, piece);
+				});
 				this.getChildren().add(p);
 				}
 			}
@@ -104,11 +111,11 @@ public class GamePanel extends Pane {
 	}
 	
 	public void clicked(MouseEvent e, Piece piece) {
-		highlighted.clear();
+		clearHighlighted();
 		checkMoves(piece);
-		
+			
 		boardDisplay[(int) Math.floor(e.getY()/ SIZE)][(int) Math.floor(e.getX()/ SIZE)] = null;
-		
+			
 		this.getChildren().addAll(highlighted);
 	}
 
@@ -117,10 +124,11 @@ public class GamePanel extends Pane {
 		img.toFront();
 		img.setX((e.getX() - SIZE/2));
 		img.setY((e.getY() - SIZE/2));
+		
 	}
 	
 	public void released(MouseEvent e, Piece p) {
-		
+
 		highlighted.forEach(a -> this.getChildren().remove(a));
 		
 		int x = (int) ((e.getX() / SIZE));
@@ -153,8 +161,7 @@ public class GamePanel extends Pane {
 		
 		boardDisplay[y][x] = p;
 		
-		highlighted.forEach(a -> this.getChildren().remove(a));
-		highlighted.clear();
+		clearHighlighted();
 		} else {
 			p.draw();
 			boardDisplay[(int) p.getY()][(int) Math.floor(p.getX())] = p;
@@ -169,6 +176,11 @@ public class GamePanel extends Pane {
 			}
 			System.out.println();
 		}
+	}
+	
+	private void clearHighlighted() {
+		highlighted.forEach(a -> this.getChildren().remove(a));
+		highlighted.clear();
 	}
 	
 	
